@@ -15,7 +15,7 @@ $mailPort = 1234;
 $mailUsername = "username";
 $mailPassword = "password";
 $mailFrom = 'from@add.ress';
-$mailTo = 'to@add.ress';
+$mailTo = ['to@add.ress', 'another_to@add.ress'];
 $mailSubject = 'Server status alert';
 //// < / CONFIG >
 
@@ -134,7 +134,9 @@ if (count($errors) != 0) {
 
         //Recipients
         $mail->setFrom($mailFrom);
-        $mail->addAddress($mailTo);                          // Add a recipient
+        foreach ($mailTo as $to) {
+            $mail->addAddress($to);                          // Add a recipient(s)
+        }
 
         // Content
         $mail->isHTML(false);
