@@ -75,7 +75,6 @@ $memFields = [
     'SwapFree' => 1
 ];
 $memInfo = getProcMemInfo($memFields);
-echo("memory: ".print_r($memInfo, true));
 if (count($memInfo) == count($memFields)) {
     // check mem
     $usedMem = $memInfo['MemTotal'] - $memInfo['MemAvailable'];
