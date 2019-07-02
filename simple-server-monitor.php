@@ -68,15 +68,17 @@ if ($cpuLoadAverage >= $cpuLimit) {
 $memFields = [
     'MemTotal' => 1,
     'MemFree' => 1,
+    'MemAvailable' => 1,
     'Buffers' => 1,
     'Cached' => 1,
     'SwapTotal' => 1,
     'SwapFree' => 1
 ];
 $memInfo = getProcMemInfo($memFields);
+echo("memory: ".print_r($memInfo, true));
 if (count($memInfo) == count($memFields)) {
     // check mem
-    $usedMem = $memInfo['MemTotal'] - $memInfo['MemFree'];
+    $usedMem = $memInfo['MemTotal'] - $memInfo['MemAvailable'];
     $memUsagePercent = (int)(($usedMem / $memInfo['MemTotal'])*100);
     if ($memUsagePercent >= $memoryLimit) {
         $errors[] = "Memory usage is $memUsagePercent %";
