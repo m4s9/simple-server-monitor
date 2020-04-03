@@ -2,7 +2,7 @@
 
 //// < CONFIG >
 // LIMITS
-$cpuLimit = 0.5;       // load average (5min)
+$cpuLimit = 0.5;       // load average (15min)
 $memoryLimit = 60;     // percent
 $swapLimit = 20;       // percent
 $directoriesToWatch = ["/"];
@@ -59,7 +59,7 @@ function getProcMemInfo($fields)
 $errors = [];
 
 // CPU
-$cpuLoadAverage = sys_getloadavg()[1];
+$cpuLoadAverage = sys_getloadavg()[2];
 if ($cpuLoadAverage >= $cpuLimit) {
     $errors[] = "CPU load average in 5 min has been $cpuLoadAverage";
 }
