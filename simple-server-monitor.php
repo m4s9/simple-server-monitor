@@ -61,7 +61,7 @@ $errors = [];
 // CPU
 $cpuLoadAverage = sys_getloadavg()[2];
 if ($cpuLoadAverage >= $cpuLimit) {
-    $errors[] = "CPU load average in 5 min has been $cpuLoadAverage";
+    $errors[] = "CPU load average in 15 min has been $cpuLoadAverage";
 }
 
 // MEMORY
