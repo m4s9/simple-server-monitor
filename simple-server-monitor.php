@@ -9,6 +9,9 @@ $directoriesToWatch = ["/"];
 $diskUsageLimit = 50;  // percent
 $inodeUsageLimit = 50; // percent
 
+// NOTIFY INTERVAL
+$notifyInterval = 3*60*60;
+
 // MAIL
 $mailHost = "mailser.ver";
 $mailPort = 1234;
@@ -58,10 +61,20 @@ function getProcMemInfo($fields)
 
 $errors = [];
 
+// READ DATA
+$dataFile = "data.json";
+$dataStore = @json_decode(file_get_contents($dataFile), true);
+if (!$dataStore) {
+    $dataStore = [];
+}
+if (!isset($dataStore['errors'])) {
+    $dataStore['errors'] = [];
+}
+
 // CPU
 $cpuLoadAverage = sys_getloadavg()[2];
 if ($cpuLoadAverage >= $cpuLimit) {
-    $errors[] = "CPU load average in 15 min has been $cpuLoadAverage";
+    $errors[] = ['type' => 'cpu', 'msg' => "CPU load average in 15 min has been $cpuLoadAverage"];
 }
 
 // MEMORY
@@ -80,18 +93,18 @@ if (count($memInfo) == count($memFields)) {
     $usedMem = $memInfo['MemTotal'] - $memInfo['MemAvailable'];
     $memUsagePercent = (int)(($usedMem / $memInfo['MemTotal'])*100);
     if ($memUsagePercent >= $memoryLimit) {
-        $errors[] = "Memory usage is $memUsagePercent %";
+        $errors[] = ['type' => 'mem', 'msg' => "Memory usage is $memUsagePercent %"];
     }
     // check swap
     if ($memInfo['SwapTotal'] != 0) {
         $usedSwap = $memInfo['SwapTotal'] - $memInfo['SwapFree'];
         $swapUsagePercent = (int)(($usedSwap / $memInfo['SwapTotal'])*100);
         if ($swapUsagePercent >= $swapLimit) {
-            $errors[] = "Swap usage is $swapUsagePercent %";
+            $errors[] = ['type' => 'swap', 'msg' => "Swap usage is $swapUsagePercent %"];
         }
     }
 } else {
-    $errors[] = "Meminfo read failed: ".print_r($memInfo, true);
+    $errors[] = ['type' => 'memread', 'msg' => "Meminfo read failed: ".print_r($memInfo, true)];
 }
 
 // DISK
@@ -101,22 +114,36 @@ foreach ($directoriesToWatch as $dir) {
     $spaceInUse = $totalSpace - disk_free_space($dir);
     $diskUsagePercent = (int)(($spaceInUse / $totalSpace)*100);
     if ($diskUsagePercent >= $diskUsageLimit) {
-        $errors[] = "Disk of '$dir' is using $diskUsagePercent % of its capacity";
+        $errors[] = ['type' => 'disk '.$dir, 'msg' => "Disk of '$dir' is using $diskUsagePercent % of its capacity"];
     }
     // inodes
     $cmd = 'df -hi "'.$dir.'" | awk \'{print $5}\' | tail -n 1 | sed \'s/%//\'';
     $inodeUsagePercent = system($cmd); // todo: supress echoing
     if ($inodeUsagePercent >= $inodeUsageLimit) {
-        $errors[] = "Disk of '$dir' is using $inodeUsagePercent % of its inodes";
+        $errors[] = ['type' => 'inode '.$dir, 'msg' => "Disk of '$dir' is using $inodeUsagePercent % of its inodes"];
     }
 }
 
+$reportableErrors = [];
+foreach ($errors as $error) {
+    if (!isset($dataStore['errors'][$error['type']])) {
+        $dataStore['errors'][$error['type']] = ['ts' => 0];
+    }
+    if ((time() - $notifyInterval) > $dataStore['errors'][$error['type']]['ts']) {
+        $reportableErrors[] = $error;
+        $dataStore['errors'][$error['type']]['ts'] = time();
+    }
+}
+
+// SAVE DATA
+file_put_contents($dataFile, json_encode($dataStore));
+
 // REPORT ERRORS
-if (count($errors) != 0) {
+if (count($reportableErrors) != 0) {
     $msg = "";
-    foreach ($errors as $error) {
-        echo "$error\n";
-        $msg .= "$error\n";
+    foreach ($reportableErrors as $error) {
+        echo $error['msg']."\n";
+        $msg .= $error['msg']."\n";
     }
     
     // Instantiation and passing `true` enables exceptions
