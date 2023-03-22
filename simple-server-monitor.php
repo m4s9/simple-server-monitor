@@ -15,7 +15,7 @@ $notifyInterval = 3*60*60;
 // MAIL
 $mailHost = "mailser.ver";
 $mailPort = 1234;
-$mailUsername = "username";
+$mailSMTPSecure = 'ssl'; // or tls
 $mailPassword = "password";
 $mailFrom = 'from@add.ress';
 $mailTo = ['to@add.ress', 'another_to@add.ress'];
@@ -157,7 +157,7 @@ if (count($reportableErrors) != 0) {
         $mail->SMTPAuth   = true;                            // Enable SMTP authentication
         $mail->Username   = $mailUsername;                   // SMTP username
         $mail->Password   = $mailPassword;                   // SMTP password
-        $mail->SMTPSecure = 'tls';                           // Enable TLS encryption, `ssl` also accepted
+        $mail->SMTPSecure = $mailSMTPSecure;                 // Enable TLS encryption, `ssl` also accepted
         $mail->Port       = $mailPort;                       // TCP port to connect to
 
         //Recipients
