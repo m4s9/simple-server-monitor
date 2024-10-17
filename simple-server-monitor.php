@@ -16,6 +16,7 @@ $notifyInterval = 3*60*60;
 $mailHost = "mailser.ver";
 $mailPort = 1234;
 $mailSMTPSecure = 'ssl'; // or tls
+$mailUsername = "username";
 $mailPassword = "password";
 $mailFrom = 'from@add.ress';
 $mailTo = ['to@add.ress', 'another_to@add.ress'];
